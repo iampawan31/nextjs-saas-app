@@ -1,7 +1,6 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -34,7 +33,7 @@ const CompanionsList = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companions?.map(({ id, subject, name, topic, duration }) => (
+          {companions?.map(({ id, subject, name, duration }) => (
             <TableRow key={id}>
               <TableCell className="font-medium">
                 <Link href={`/companions/${id}`}>
