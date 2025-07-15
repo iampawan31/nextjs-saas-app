@@ -1,13 +1,9 @@
 'use client'
 
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,8 +17,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { subjects } from '@/constants'
-import { Textarea } from './ui/textarea'
+import { createCompanion } from '@/lib/actions/companion.actions'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { redirect } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Companion name is required.' }),
@@ -34,7 +35,7 @@ const formSchema = z.object({
 })
 
 const CompanionForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -46,8 +47,15 @@ const CompanionForm = () => {
     }
   })
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const companion = await createCompanion(values)
+
+    if (companion) {
+      redirect(`/companions/${companion.id}`)
+    } else {
+      console.log('Failed to create a companion')
+      redirect('/')
+    }
   }
 
   return (
@@ -180,10 +188,11 @@ const CompanionForm = () => {
               <FormLabel>Estimated session duration in minutes</FormLabel>
               <FormControl>
                 <Input
-                  type="number"
                   placeholder="14"
                   {...field}
                   className="input"
+                  type="number"
+                  value={String(field.value)}
                 />
               </FormControl>
               <FormMessage />
