@@ -16,7 +16,7 @@ const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
     companionId: id
   })
 
-  const { id: companionId, duration, name, subject, title, topic } = companion
+  const { id: companionId, duration, name, subject, topic } = companion
   const user = await currentUser()
 
   // If no user found, redirect to sign in page
