@@ -7,15 +7,23 @@ import {
 } from '@/lib/actions/companion.actions'
 import { getSubjectColor } from '@/lib/utils'
 
+// 🚨 Force dynamic rendering since server-only functions (headers, cookies) are used
+export const dynamic = 'force-dynamic'
+
 const Page = async () => {
-  const companions = await getAllCompanions({ limit: 3 })
-  const recentSessionsCompanions = await getRecentSessions({ limit: 10 })
+  const [companions, recentSessionsCompanions] = await Promise.all([
+    getAllCompanions({ limit: 3 }),
+    getRecentSessions({ limit: 10 })
+  ])
 
   return (
     <main>
       <h1>Popular Companions</h1>
 
-      <section className="home-section">
+      <section
+        className="home-section"
+        aria-labelledby="popular-companions"
+      >
         {companions.map((companion) => (
           <CompanionCard
             key={companion.id}
