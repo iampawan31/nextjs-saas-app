@@ -3,6 +3,22 @@
 import { auth } from '@clerk/nextjs/server'
 import { createSupabaseClient } from '../supabase'
 
+export const addToSessionHistory = async (companionId: string) => {
+  const { userId } = await auth()
+  const supabase = createSupabaseClient()
+
+  const { data, error } = await supabase.from('session_history').insert({
+    companion_id: companionId,
+    user_id: userId
+  })
+
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to create a session')
+  }
+
+  return data
+}
+
 export const createCompanion = async (
   formData: CreateCompanion
 ): Promise<Companion> => {
@@ -50,4 +66,66 @@ export const getAllCompanions = async ({
   }
 
   return companions
+}
+
+export const getCompanion = async ({
+  companionId
+}: {
+  companionId: string
+}): Promise<Companion> => {
+  const supabase = createSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('companions')
+    .select()
+    .eq('id', companionId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data[0]
+}
+
+export const getRecentSessions = async ({ limit = 10 }) => {
+  const supabase = createSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('session_history')
+    .select(`companions:companion_id (*)`)
+    .order('created_at', {
+      ascending: false
+    })
+    .limit(limit)
+
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to fetch recent sessions')
+  }
+
+  return data.map(({ companions }) => companions)
+}
+
+export const getUserSessions = async ({
+  userId,
+  limit = 10
+}: {
+  userId: string
+  limit: number
+}) => {
+  const supabase = createSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('session_history')
+    .select(`companions:companion_id (*)`)
+    .eq('user_id', userId)
+    .order('created_at', {
+      ascending: false
+    })
+    .limit(limit)
+
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to fetch recent sessions')
+  }
+
+  return data.map(({ companions }) => companions)
 }
